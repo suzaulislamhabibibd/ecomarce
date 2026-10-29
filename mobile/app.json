@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "HaatBazar",
+    "slug": "haatbazar",
+    "version": "1.0.0",
+    "scheme": "haatbazar",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.haatbazar.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#059669",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "haatbazar.com", "pathPrefix": "/product" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow HaatBazar to use the camera to scan product QR codes.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "https://haatbazar.com",
+      "webHosts": ["haatbazar.com", "www.haatbazar.com"]
+    }
+  }
+}

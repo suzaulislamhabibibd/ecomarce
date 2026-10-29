@@ -1,0 +1,10 @@
+/vendor
+/node_modules
+/mobile
+/tests
+/storage/logs/*
+/storage/framework/views/*
+/public/storage
+/public/hot
+.env
+.phpunit.result.cache
