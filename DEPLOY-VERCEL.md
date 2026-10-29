@@ -57,3 +57,23 @@ Vercel deploys the repository's production branch (usually `main`) to your produ
 
 - There are no background workers or cron, so the queue runs synchronously (`QUEUE_CONNECTION=sync`).
 - Each request can run for at most 30 seconds (`maxDuration` in `vercel.json`).
+
+## Troubleshooting a 500 "Server error"
+
+If the HaatBazar error page shows, Laravel is running on Vercel but something it needs is missing. To find the cause:
+
+1. Open the deployment in Vercel, then **Logs**. Errors are written there, because `LOG_CHANNEL=stderr`.
+2. Or set `APP_DEBUG=true` in **Settings → Environment Variables**, redeploy, open the site and read the error. **Remove it again afterwards**, because it shows secrets to visitors.
+
+Common causes:
+
+| Error | Fix |
+|---|---|
+| `No application encryption key has been specified` | Add `APP_KEY` (`php artisan key:generate --show`) |
+| `SQLSTATE[HY000] [2002]` / `Connection refused` / `timed out` | `DB_HOST`/`DB_PORT` are wrong, or the database does not allow outside connections |
+| `SQLSTATE[HY000] [1045] Access denied` | Wrong `DB_USERNAME` / `DB_PASSWORD` |
+| `Connections using insecure transport are prohibited` / SSL errors | Set `MYSQL_ATTR_SSL_CA=/etc/pki/tls/certs/ca-bundle.crt` |
+| `Base table or view not found: ... sessions` (or `cache`, `products`) | Run `php artisan migrate --force` against the production database |
+| `Vite manifest not found` | The build step did not run. Check the build logs for `npm run build` |
+
+After changing environment variables, redeploy. Vercel only applies them to new deployments.
