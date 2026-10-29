@@ -1,0 +1,38 @@
+{
+  "name": "ecomarce",
+  "version": "0.1.0",
+  "description": "Modern ecommerce store with Next.js and Vercel Analytics",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suzaulislamhabibibd/ecomarce.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/suzaulislamhabibibd/ecomarce/issues"
+  },
+  "homepage": "https://github.com/suzaulislamhabibibd/ecomarce#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "next": "^16.4.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.6.2",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.0"
+  }
+}
