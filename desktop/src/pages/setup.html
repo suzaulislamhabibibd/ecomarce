@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'" />
+        <title>HaatBazar · Server settings</title>
+        <link rel="stylesheet" href="setup.css" />
+    </head>
+    <body>
+        <main class="card">
+            <div class="brand"><span class="logo">H</span> HaatBazar</div>
+            <h1>Connect to your shop</h1>
+            <p class="muted">Choose where the HaatBazar website runs. You can change this later from <b>HaatBazar → Server settings</b>.</p>
+
+            <div id="error" class="alert error" hidden></div>
+
+            <form id="form">
+                <div id="presets" class="presets"></div>
+                <label class="field">
+                    <span>Server address</span>
+                    <input id="url" type="text" placeholder="https://ecomarce-gray.vercel.app" autocomplete="off" spellcheck="false" required />
+                </label>
+                <div id="status" class="alert" hidden></div>
+                <div class="actions">
+                    <button type="button" id="test" class="secondary">Test connection</button>
+                    <button type="submit" id="save">Save &amp; open</button>
+                </div>
+            </form>
+        </main>
+        <script src="setup.js"></script>
+    </body>
+</html>

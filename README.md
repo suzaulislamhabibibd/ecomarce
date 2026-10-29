@@ -38,6 +38,10 @@ Customers shop from many sellers in one cart. Each order is split into per-vendo
 - Affiliate dashboard with stats, a QR code, link sharing, commissions and payout requests
 - Admin panel: stats, approve or suspend vendors and affiliates, orders, process payouts
 
+**Windows desktop app**: see [`desktop/README.md`](desktop/README.md)
+- An Electron app with an installer and a portable `.exe`. It opens the storefront and every panel in its own window.
+- On first run you pick the server: the live website or this PC (Laragon)
+
 **Admin**
 - Dashboard: gross sales (GMV), commission earned, top vendors, recent orders
 - Approve or suspend vendors and set a custom commission rate per vendor
@@ -146,6 +150,7 @@ resources/js/
   Components/                ProductCard, Pagination, Form fields, badges…
   Pages/                     Inertia React pages
 mobile/                      Android app (Expo / React Native)
+desktop/                     Windows desktop app (Electron)
 ```
 
 ## Next steps

@@ -1,0 +1,53 @@
+{
+  "name": "haatbazar-desktop",
+  "productName": "HaatBazar",
+  "version": "1.0.0",
+  "description": "HaatBazar desktop app for Windows",
+  "main": "src/main.js",
+  "author": "HaatBazar",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win nsis portable",
+    "test": "node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "electron": "^44.9.2",
+    "electron-builder": "^26.17.0"
+  },
+  "build": {
+    "appId": "com.haatbazar.desktop",
+    "productName": "HaatBazar",
+    "copyright": "HaatBazar",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "build/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png",
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "HaatBazar",
+      "artifactName": "HaatBazar-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "HaatBazar-Portable-${version}.${ext}"
+    },
+    "publish": null
+  }
+}
