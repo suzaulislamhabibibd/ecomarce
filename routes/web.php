@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Account\OrderController as AccountOrderController;
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\Affiliate\AffiliateController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
@@ -11,6 +12,16 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\Vendor;
 use Illuminate\Support\Facades\Route;
+
+// Android App Links verification (see config/services.php).
+Route::get('/.well-known/assetlinks.json', fn () => response()->json([[
+    'relation' => ['delegate_permission/common.handle_all_urls'],
+    'target' => [
+        'namespace' => 'android_app',
+        'package_name' => config('services.android.package'),
+        'sha256_cert_fingerprints' => array_values(config('services.android.sha256_fingerprints')),
+    ],
+]]));
 
 // Storefront
 Route::get('/', HomeController::class)->name('home');
@@ -43,6 +54,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/orders/{order}', [AccountOrderController::class, 'show'])->name('account.orders.show');
     Route::post('/account/orders/{order}/cancel', [AccountOrderController::class, 'cancel'])->name('account.orders.cancel');
 
+    Route::get('/affiliate/join', [AffiliateController::class, 'join'])->name('affiliate.join');
+    Route::post('/affiliate/join', [AffiliateController::class, 'storeJoin'])->name('affiliate.join.store');
+
     Route::get('/sell', [Vendor\ShopController::class, 'apply'])->name('vendor.apply');
     Route::post('/sell', [Vendor\ShopController::class, 'storeApplication'])->name('vendor.apply.store');
 });
@@ -59,6 +73,15 @@ Route::middleware(['auth', 'role:vendor'])->prefix('vendor')->name('vendor.')->g
     Route::post('/shop', [Vendor\ShopController::class, 'update'])->name('shop.update');
 });
 
+// Affiliate panel
+Route::middleware(['auth', 'role:affiliate'])->prefix('affiliate')->name('affiliate.')->group(function () {
+    Route::get('/', [AffiliateController::class, 'dashboard'])->name('dashboard');
+    Route::get('/links', [AffiliateController::class, 'links'])->name('links');
+    Route::get('/commissions', [AffiliateController::class, 'commissions'])->name('commissions');
+    Route::get('/payouts', [AffiliateController::class, 'payouts'])->name('payouts.index');
+    Route::post('/payouts', [AffiliateController::class, 'requestPayout'])->name('payouts.store');
+});
+
 // Admin panel
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', Admin\DashboardController::class)->name('dashboard');
@@ -71,6 +94,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/orders/{order}', [Admin\OrderController::class, 'show'])->name('orders.show');
     Route::get('/users', [Admin\UserController::class, 'index'])->name('users.index');
     Route::post('/users/{user}/toggle-active', [Admin\UserController::class, 'toggleActive'])->name('users.toggle-active');
+    Route::get('/affiliates', [Admin\AffiliateController::class, 'index'])->name('affiliates.index');
+    Route::patch('/affiliates/{affiliate}', [Admin\AffiliateController::class, 'update'])->name('affiliates.update');
     Route::get('/payouts', [Admin\PayoutController::class, 'index'])->name('payouts.index');
     Route::patch('/payouts/{payout}', [Admin\PayoutController::class, 'update'])->name('payouts.update');
     Route::get('/settings', [Admin\SettingController::class, 'edit'])->name('settings.edit');

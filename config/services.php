@@ -2,6 +2,12 @@
 
 return [
 
+    // Android App Links: lets QR codes and https links open the app directly.
+    'android' => [
+        'package' => env('ANDROID_PACKAGE', 'com.haatbazar.app'),
+        'sha256_fingerprints' => array_filter(explode(',', (string) env('ANDROID_SHA256_FINGERPRINTS', ''))),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

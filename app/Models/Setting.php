@@ -19,6 +19,8 @@ class Setting extends Model
         'site_name' => 'HaatBazar',
         'commission_rate' => '10',
         'shipping_fee' => '60',
+        'affiliate_commission_rate' => '5',
+        'affiliate_cookie_days' => '30',
     ];
 
     public static function allValues(): array

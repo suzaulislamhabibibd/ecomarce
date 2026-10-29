@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
-    'number', 'user_id', 'subtotal', 'shipping_fee', 'total', 'shipping_name', 'shipping_phone',
+    'number', 'user_id', 'affiliate_id', 'subtotal', 'shipping_fee', 'total', 'shipping_name', 'shipping_phone',
     'shipping_address', 'shipping_city', 'note', 'payment_method', 'payment_status', 'status',
 ])]
 class Order extends Model
@@ -25,6 +26,16 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function affiliate(): BelongsTo
+    {
+        return $this->belongsTo(Affiliate::class);
+    }
+
+    public function affiliateCommission(): HasOne
+    {
+        return $this->hasOne(AffiliateCommission::class);
     }
 
     public function items(): HasMany

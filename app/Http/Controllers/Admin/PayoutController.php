@@ -16,7 +16,7 @@ class PayoutController extends Controller
         $status = $request->string('status')->toString();
 
         return Inertia::render('Admin/Payouts', [
-            'payouts' => Payout::with('vendor:id,shop_name,slug')
+            'payouts' => Payout::with(['vendor:id,shop_name,slug', 'affiliate:id,code,user_id', 'affiliate.user:id,name'])
                 ->when($status, fn ($q) => $q->where('status', $status))
                 ->latest()->paginate(20)->withQueryString(),
             'filters' => ['status' => $status],

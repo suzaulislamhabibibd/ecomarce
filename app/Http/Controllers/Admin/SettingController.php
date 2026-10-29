@@ -22,6 +22,8 @@ class SettingController extends Controller
             'site_name' => ['required', 'string', 'max:60'],
             'commission_rate' => ['required', 'numeric', 'between:0,100'],
             'shipping_fee' => ['required', 'numeric', 'min:0', 'max:10000'],
+            'affiliate_commission_rate' => ['required', 'numeric', 'between:0,100'],
+            'affiliate_cookie_days' => ['required', 'integer', 'between:1,365'],
         ]));
 
         return back()->with('success', 'Settings saved.');

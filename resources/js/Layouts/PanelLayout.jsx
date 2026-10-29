@@ -10,12 +10,19 @@ const menus = {
         ['/vendor/payouts', 'Payouts'],
         ['/vendor/shop', 'Shop settings'],
     ],
+    affiliate: [
+        ['/affiliate', 'Dashboard'],
+        ['/affiliate/links', 'Links & QR codes'],
+        ['/affiliate/commissions', 'Commissions'],
+        ['/affiliate/payouts', 'Payouts'],
+    ],
     admin: [
         ['/admin', 'Dashboard'],
         ['/admin/vendors', 'Vendors'],
         ['/admin/products', 'Products'],
         ['/admin/categories', 'Categories'],
         ['/admin/orders', 'Orders'],
+        ['/admin/affiliates', 'Affiliates'],
         ['/admin/payouts', 'Payouts'],
         ['/admin/users', 'Users'],
         ['/admin/settings', 'Settings'],
@@ -63,7 +70,7 @@ export default function PanelLayout({ type, title, actions, children }) {
             <aside className={`${open ? 'block' : 'hidden'} bg-slate-900 lg:block lg:min-h-screen lg:w-60 lg:shrink-0`}>
                 <div className="hidden px-5 py-5 lg:block">
                     <div className="text-lg font-bold text-white">{settings.site_name}</div>
-                    <div className="text-xs tracking-wide text-brand-500 uppercase">{type === 'admin' ? 'Admin' : 'Seller center'}</div>
+                    <div className="text-xs tracking-wide text-brand-500 uppercase">{{ admin: 'Admin', vendor: 'Seller center', affiliate: 'Affiliate center' }[type]}</div>
                 </div>
                 {nav}
             </aside>

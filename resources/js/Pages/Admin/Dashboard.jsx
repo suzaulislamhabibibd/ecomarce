@@ -9,7 +9,12 @@ export default function Dashboard({ stats, recentOrders, topVendors }) {
         <PanelLayout type="admin" title="Dashboard">
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label="Gross sales (GMV)" value={money(stats.gmv)} hint={`${stats.orders} orders`} />
-                <StatCard label="Commission earned" value={money(stats.commission)} hint="From delivered items" accent="text-brand-700" />
+                <StatCard
+                    label="Commission earned"
+                    value={money(stats.commission)}
+                    hint={`${money(stats.affiliate_commission)} owed to affiliates`}
+                    accent="text-brand-700"
+                />
                 <StatCard label="Vendors" value={stats.vendors} hint={<Link href="/admin/vendors?status=pending" className="text-amber-600">{stats.pending_vendors} awaiting approval</Link>} />
                 <StatCard label="Customers" value={stats.customers} hint={`${stats.products} products · ${stats.pending_payouts} payout requests`} />
             </div>

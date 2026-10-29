@@ -17,12 +17,15 @@ export default function Payouts({ payouts, filters }) {
             <FilterTabs base="/admin/payouts" current={filters.status} options={[['', 'All'], ['requested', 'Requested'], ['paid', 'Paid'], ['rejected', 'Rejected']]} />
             <div className="card overflow-x-auto">
                 <table className="table">
-                    <thead><tr><th>Date</th><th>Vendor</th><th>Amount</th><th>Method</th><th>Status</th><th>Note</th><th /></tr></thead>
+                    <thead><tr><th>Date</th><th>Payee</th><th>Amount</th><th>Method</th><th>Status</th><th>Note</th><th /></tr></thead>
                     <tbody>
                         {payouts.data.map((p) => (
                             <tr key={p.id}>
                                 <td>{date(p.created_at)}</td>
-                                <td className="font-medium">{p.vendor?.shop_name}</td>
+                                <td>
+                                    <div className="font-medium">{p.vendor ? p.vendor.shop_name : p.affiliate?.user?.name}</div>
+                                    <div className="text-xs text-slate-500">{p.vendor ? 'Vendor' : `Affiliate · ${p.affiliate?.code}`}</div>
+                                </td>
                                 <td className="font-semibold">{money(p.amount)}</td>
                                 <td className="capitalize">{p.method} · {p.account}</td>
                                 <td><StatusBadge status={p.status} /></td>

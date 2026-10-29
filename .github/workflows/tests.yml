@@ -39,3 +39,24 @@ jobs:
 
       - name: Run tests
         run: php artisan test
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - run: npm ci
+
+      - name: Bundle Android app
+        run: npx expo export --platform android
+        env:
+          EXPO_OFFLINE: 1

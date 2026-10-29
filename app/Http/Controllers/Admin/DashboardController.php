@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AffiliateCommission;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payout;
@@ -28,6 +29,7 @@ class DashboardController extends Controller
                 'pending_vendors' => Vendor::where('status', Vendor::STATUS_PENDING)->count(),
                 'products' => Product::count(),
                 'pending_payouts' => Payout::where('status', 'requested')->count(),
+                'affiliate_commission' => (float) AffiliateCommission::where('status', 'approved')->sum('amount'),
             ],
             'recentOrders' => Order::with('user:id,name')->latest()->take(8)->get(),
             'topVendors' => Vendor::approved()

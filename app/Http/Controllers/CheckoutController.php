@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\CaptureReferral;
+use App\Models\Affiliate;
 use App\Models\Setting;
 use App\Services\Cart;
 use App\Services\OrderService;
@@ -46,7 +48,9 @@ class CheckoutController extends Controller
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $order = $orders->place($request->user(), $shipping, $this->cart);
+        $affiliate = Affiliate::findActiveByCode($request->cookie(CaptureReferral::COOKIE));
+        $order = $orders->place($request->user(), $shipping, $this->cart->raw(), $affiliate);
+        $this->cart->clear();
 
         return redirect()->route('account.orders.show', $order)
             ->with('success', "Order {$order->number} placed successfully. Pay with cash on delivery.");

@@ -4,7 +4,11 @@ import Flash from '../Components/Flash';
 
 function UserMenu({ user }) {
     const [open, setOpen] = useState(false);
-    const panel = user.role === 'admin' ? ['/admin', 'Admin panel'] : user.role === 'vendor' ? ['/vendor', 'Seller dashboard'] : null;
+    const panel = {
+        admin: ['/admin', 'Admin panel'],
+        vendor: ['/vendor', 'Seller dashboard'],
+        affiliate: ['/affiliate', 'Affiliate dashboard'],
+    }[user.role];
 
     return (
         <div className="relative">
@@ -25,9 +29,14 @@ function UserMenu({ user }) {
                         My orders
                     </Link>
                     {user.role === 'customer' && (
-                        <Link href="/sell" className="block px-4 py-2 hover:bg-slate-50">
-                            Become a seller
-                        </Link>
+                        <>
+                            <Link href="/sell" className="block px-4 py-2 hover:bg-slate-50">
+                                Become a seller
+                            </Link>
+                            <Link href="/affiliate/join" className="block px-4 py-2 hover:bg-slate-50">
+                                Join affiliate program
+                            </Link>
+                        </>
                     )}
                     <button onClick={() => router.post('/logout')} className="block w-full px-4 py-2 text-left text-rose-600 hover:bg-slate-50">
                         Log out
@@ -123,6 +132,7 @@ export default function ShopLayout({ title, children }) {
                             <li><Link href="/products" className="hover:text-white">All products</Link></li>
                             <li><Link href="/stores" className="hover:text-white">All stores</Link></li>
                             <li><Link href="/account/orders" className="hover:text-white">Track my order</Link></li>
+                            <li><Link href="/register?affiliate=1" className="hover:text-white">Affiliate program</Link></li>
                         </ul>
                     </div>
                     <div>

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Affiliate;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -14,17 +15,23 @@ use Illuminate\Validation\ValidationException;
 class OrderService
 {
     /**
-     * Place an order from the cart. Each line keeps its vendor, so one
-     * order can contain items from many vendors, each fulfilled separately.
+     * Place an order. Each line keeps its vendor, so one order can contain
+     * items from many vendors, each fulfilled separately.
+     *
+     * @param  array<int, int>  $raw  product id => quantity
      */
-    public function place(User $user, array $shipping, Cart $cart): Order
+    public function place(User $user, array $shipping, array $raw, ?Affiliate $affiliate = null): Order
     {
-        $raw = $cart->raw();
         if (! $raw) {
             throw ValidationException::withMessages(['cart' => 'Your cart is empty.']);
         }
 
-        $order = DB::transaction(function () use ($user, $shipping, $raw) {
+        // Affiliates cannot earn commission on their own purchases.
+        if ($affiliate && ($affiliate->user_id === $user->id || ! $affiliate->isApproved())) {
+            $affiliate = null;
+        }
+
+        return DB::transaction(function () use ($user, $shipping, $raw, $affiliate) {
             $products = Product::visible()->with('vendor')
                 ->whereIn('id', array_keys($raw))
                 ->lockForUpdate()->get()->keyBy('id');
@@ -32,6 +39,10 @@ class OrderService
             $lines = [];
             $subtotal = 0;
             foreach ($raw as $productId => $qty) {
+                $qty = (int) $qty;
+                if ($qty < 1) {
+                    continue;
+                }
                 $product = $products->get($productId);
                 if (! $product) {
                     throw ValidationException::withMessages(['cart' => 'A product in your cart is no longer available.']);
@@ -67,6 +78,7 @@ class OrderService
                 ...$shipping,
                 'number' => $this->newOrderNumber(),
                 'user_id' => $user->id,
+                'affiliate_id' => $affiliate?->id,
                 'subtotal' => round($subtotal, 2),
                 'shipping_fee' => $shippingFee,
                 'total' => round($subtotal + $shippingFee, 2),
@@ -74,12 +86,18 @@ class OrderService
             ]);
             $order->items()->createMany($lines);
 
+            if ($affiliate) {
+                $rate = $affiliate->effectiveCommissionRate();
+                $order->affiliateCommission()->create([
+                    'affiliate_id' => $affiliate->id,
+                    'rate' => $rate,
+                    'order_amount' => $order->subtotal,
+                    'amount' => round($order->subtotal * $rate / 100, 2),
+                ]);
+            }
+
             return $order;
         });
-
-        $cart->clear();
-
-        return $order;
     }
 
     public function updateItemStatus(OrderItem $item, string $status): void
@@ -132,6 +150,32 @@ class OrderService
         $order->update([
             'status' => $status,
             'payment_status' => $status === 'delivered' ? 'paid' : $order->payment_status,
+        ]);
+
+        $this->syncAffiliateCommission($order);
+    }
+
+    /**
+     * Keep the affiliate commission in line with what is actually sold:
+     * cancelled items are excluded and it is approved only on delivery.
+     */
+    private function syncAffiliateCommission(Order $order): void
+    {
+        $commission = $order->affiliateCommission()->first();
+        if (! $commission) {
+            return;
+        }
+
+        $amount = (float) $order->items()->where('status', '!=', 'cancelled')->sum('line_total');
+
+        $commission->update([
+            'order_amount' => $amount,
+            'amount' => round($amount * $commission->rate / 100, 2),
+            'status' => match ($order->status) {
+                'delivered' => 'approved',
+                'cancelled' => 'cancelled',
+                default => 'pending',
+            },
         ]);
     }
 

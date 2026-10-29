@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Affiliate;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Support\Slug;
@@ -40,7 +41,9 @@ class AuthController extends Controller
 
     public function showRegister(Request $request): Response
     {
-        return Inertia::render('Auth/Register', ['asVendor' => $request->boolean('vendor')]);
+        $type = $request->boolean('vendor') ? 'vendor' : ($request->boolean('affiliate') ? 'affiliate' : 'customer');
+
+        return Inertia::render('Auth/Register', ['accountType' => $type]);
     }
 
     public function register(Request $request): RedirectResponse
@@ -50,38 +53,53 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:150', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:30'],
             'password' => ['required', 'confirmed', Password::min(8)],
-            'as_vendor' => ['boolean'],
-            'shop_name' => ['required_if:as_vendor,true', 'nullable', 'string', 'max:100'],
+            'account_type' => ['required', 'in:customer,vendor,affiliate'],
+            'shop_name' => ['required_if:account_type,vendor', 'nullable', 'string', 'max:100'],
+            'promo_channel' => ['required_if:account_type,affiliate', 'nullable', 'string', 'max:255'],
         ]);
 
-        $user = DB::transaction(function () use ($data) {
-            $isVendor = ! empty($data['as_vendor']);
+        $user = $this->createAccount($data);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect($this->home($user))->with('success', match ($user->role) {
+            User::ROLE_VENDOR => 'Welcome! Your shop is awaiting admin approval.',
+            User::ROLE_AFFILIATE => 'Welcome! Your affiliate account is awaiting admin approval.',
+            default => 'Welcome to '.config('app.name').'!',
+        });
+    }
+
+    /** Create a user with the vendor or affiliate profile its account type needs. */
+    public static function createAccount(array $data): User
+    {
+        return DB::transaction(function () use ($data) {
+            $type = $data['account_type'];
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?? null,
                 'password' => $data['password'],
-                'role' => $isVendor ? User::ROLE_VENDOR : User::ROLE_CUSTOMER,
+                'role' => $type,
             ]);
 
-            if ($isVendor) {
+            if ($type === User::ROLE_VENDOR) {
                 Vendor::create([
                     'user_id' => $user->id,
                     'shop_name' => $data['shop_name'],
                     'slug' => Slug::unique(Vendor::class, $data['shop_name']),
                     'phone' => $data['phone'] ?? null,
                 ]);
+            } elseif ($type === User::ROLE_AFFILIATE) {
+                Affiliate::create([
+                    'user_id' => $user->id,
+                    'code' => Affiliate::generateCode(),
+                    'promo_channel' => $data['promo_channel'],
+                ]);
             }
 
             return $user;
         });
-
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect($this->home($user))->with('success', $user->isVendor()
-            ? 'Welcome! Your shop is awaiting admin approval.'
-            : 'Welcome to '.config('app.name').'!');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -98,6 +116,7 @@ class AuthController extends Controller
         return match ($user->role) {
             User::ROLE_ADMIN => route('admin.dashboard'),
             User::ROLE_VENDOR => route('vendor.dashboard'),
+            User::ROLE_AFFILIATE => route('affiliate.dashboard'),
             default => '/',
         };
     }

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Affiliate;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Review;
@@ -117,11 +118,24 @@ class DatabaseSeeder extends Seeder
             'role' => User::ROLE_CUSTOMER,
         ]);
 
-        $this->seedOrders($customer);
+        $affiliateUser = User::create([
+            'name' => 'Karim Promoter',
+            'email' => 'affiliate@haatbazar.test',
+            'password' => 'password',
+            'role' => User::ROLE_AFFILIATE,
+        ]);
+        $affiliate = Affiliate::create([
+            'user_id' => $affiliateUser->id,
+            'code' => 'KARIM2026',
+            'promo_channel' => 'Facebook page',
+            'status' => Affiliate::STATUS_APPROVED,
+        ]);
+
+        $this->seedOrders($customer, $affiliate);
     }
 
     /** One delivered multi-vendor order (with reviews) and one pending order. */
-    private function seedOrders(User $customer): void
+    private function seedOrders(User $customer, Affiliate $affiliate): void
     {
         $orders = app(OrderService::class);
         $cart = app(Cart::class);
@@ -135,7 +149,8 @@ class DatabaseSeeder extends Seeder
         foreach (['wireless-earbuds-pro', 'sundarban-honey-500g', 'cotton-panjabi-navy'] as $slug) {
             $cart->add(Product::where('slug', $slug)->first(), 1);
         }
-        $delivered = $orders->place($customer, $shipping, $cart);
+        $delivered = $orders->place($customer, $shipping, $cart->raw(), $affiliate);
+        $cart->clear();
         foreach ($delivered->items as $item) {
             foreach (['processing', 'shipped', 'delivered'] as $status) {
                 $orders->updateItemStatus($item->fresh(), $status);
@@ -151,6 +166,7 @@ class DatabaseSeeder extends Seeder
         foreach (['smart-watch-s5', 'jamdani-saree'] as $slug) {
             $cart->add(Product::where('slug', $slug)->first(), 1);
         }
-        $orders->place($customer, $shipping, $cart);
+        $orders->place($customer, $shipping, $cart->raw(), $affiliate);
+        $cart->clear();
     }
 }

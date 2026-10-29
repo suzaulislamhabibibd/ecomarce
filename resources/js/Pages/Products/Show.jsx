@@ -2,6 +2,7 @@ import { Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import ProductCard from '../../Components/ProductCard';
 import ProductImage from '../../Components/ProductImage';
+import QrCard from '../../Components/QrCard';
 import Stars from '../../Components/Stars';
 import ShopLayout from '../../Layouts/ShopLayout';
 import { date, discountPercent, money } from '../../lib/format';
@@ -33,8 +34,10 @@ function ReviewForm({ product }) {
     );
 }
 
-export default function ProductShow({ product, reviews, canReview, related }) {
+export default function ProductShow({ product, reviews, canReview, related, shareUrl, affiliateLink }) {
     const [quantity, setQuantity] = useState(1);
+    const [qrMode, setQrMode] = useState(affiliateLink ? 'affiliate' : 'product');
+    const qrValue = qrMode === 'affiliate' ? `${affiliateLink}&src=qr` : shareUrl;
     const discount = discountPercent(product.price, product.compare_price);
 
     const addToCart = (buyNow = false) => {
@@ -113,6 +116,24 @@ export default function ProductShow({ product, reviews, canReview, related }) {
                         </span>
                         <span className="ml-auto text-sm text-brand-700">Visit store →</span>
                     </Link>
+
+                    <div className="mt-6 flex flex-col gap-4 rounded-xl border border-dashed border-brand-500 bg-brand-50/50 p-4 sm:flex-row sm:items-center">
+                        <QrCard value={qrValue} size={120} fileName={product.slug} />
+                        <div className="text-sm">
+                            <div className="font-semibold text-brand-900">📱 Scan with the HaatBazar app</div>
+                            <p className="mt-1 text-slate-600">Open the app, tap <b>Scan</b> and point it at this code to open this product on your phone.</p>
+                            {affiliateLink && (
+                                <div className="mt-3 inline-flex rounded-lg bg-white p-1 text-xs font-semibold ring-1 ring-slate-200">
+                                    <button onClick={() => setQrMode('affiliate')} className={`rounded-md px-3 py-1 ${qrMode === 'affiliate' ? 'bg-brand-600 text-white' : ''}`}>
+                                        My affiliate QR
+                                    </button>
+                                    <button onClick={() => setQrMode('product')} className={`rounded-md px-3 py-1 ${qrMode === 'product' ? 'bg-brand-600 text-white' : ''}`}>
+                                        Plain QR
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     <div className="mt-6">
                         <h2 className="mb-2 font-semibold">Description</h2>

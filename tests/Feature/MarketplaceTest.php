@@ -159,7 +159,7 @@ class MarketplaceTest extends TestCase
     {
         $this->post('/register', [
             'name' => 'Seller', 'email' => 'seller@example.com', 'password' => 'password123',
-            'password_confirmation' => 'password123', 'as_vendor' => true, 'shop_name' => 'My Shop',
+            'password_confirmation' => 'password123', 'account_type' => 'vendor', 'shop_name' => 'My Shop',
         ])->assertRedirect('/vendor');
 
         $vendor = Vendor::sole();

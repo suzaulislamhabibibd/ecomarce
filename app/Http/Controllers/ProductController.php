@@ -66,6 +66,8 @@ class ProductController extends Controller
             'product' => $product,
             'reviews' => $product->reviews()->with('user:id,name')->latest()->take(20)->get(),
             'canReview' => $canReview,
+            'shareUrl' => route('products.show', $product),
+            'affiliateLink' => $user?->affiliate?->isApproved() ? $user->affiliate->link($product) : null,
             'related' => Product::visible()->with('vendor:id,shop_name,slug')->withAvg('reviews', 'rating')
                 ->where('id', '!=', $product->id)
                 ->where(fn ($q) => $q->where('category_id', $product->category_id)->orWhere('vendor_id', $product->vendor_id))
