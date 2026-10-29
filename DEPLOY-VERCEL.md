@@ -13,13 +13,14 @@ The repository is ready for Vercel. Laravel runs as a serverless function throug
 
 Vercel does not host MySQL. Create a database with any hosted MySQL provider, for example TiDB Cloud Serverless, Aiven for MySQL or Railway. Note the host, port, database name, user and password.
 
-Run the migrations (and the demo seed, if you want it) from your computer, against that database:
+You don't need to run migrations by hand. On every deployment, the build runs `php artisan app:setup-database` (the `vercel` script in `composer.json`). It:
 
-```bash
-DB_HOST=<host> DB_PORT=<port> DB_DATABASE=<db> DB_USERNAME=<user> DB_PASSWORD=<pass> php artisan migrate --force --seed
-```
+- runs the migrations
+- on an empty database, creates your admin account from `ADMIN_EMAIL` / `ADMIN_PASSWORD`
+- seeds the demo shops, products and accounts when `SEED_DEMO_DATA=true`
+- never fails the build: if the database is not reachable yet, it logs a warning and skips
 
-> The seed creates demo accounts with the password `password`. Skip `--seed`, or change those accounts right after deploying.
+> The demo seed creates sample accounts with the password `password` (admin access goes to `ADMIN_EMAIL`). Turn `SEED_DEMO_DATA` off, or delete those accounts, before you take real orders.
 
 ## 2. Create storage for uploaded images
 
@@ -39,6 +40,8 @@ Vercel's filesystem is not persistent, so product images and shop logos go to S3
 | `DB_CONNECTION` | `mysql` |
 | `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | from step 1 |
 | `MYSQL_ATTR_SSL_CA` | `/etc/pki/tls/certs/ca-bundle.crt` (if your provider requires TLS) |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | your admin login, created on the first deployment |
+| `SEED_DEMO_DATA` | `true` to load the demo catalog on the first deployment |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`, `AWS_BUCKET` | from step 2 (`AWS_DEFAULT_REGION=auto` for R2) |
 | `AWS_ENDPOINT` | R2/B2 only, e.g. `https://<account>.r2.cloudflarestorage.com` |
 | `AWS_URL` | public URL of the bucket, used for image links |
@@ -57,3 +60,23 @@ Vercel deploys the repository's production branch (usually `main`) to your produ
 
 - There are no background workers or cron, so the queue runs synchronously (`QUEUE_CONNECTION=sync`).
 - Each request can run for at most 30 seconds (`maxDuration` in `vercel.json`).
+
+## Troubleshooting a 500 "Server error"
+
+If the HaatBazar error page shows, Laravel is running on Vercel but something it needs is missing. To find the cause:
+
+1. Open the deployment in Vercel, then **Logs**. Errors are written there, because `LOG_CHANNEL=stderr`.
+2. Or set `APP_DEBUG=true` in **Settings → Environment Variables**, redeploy, open the site and read the error. **Remove it again afterwards**, because it shows secrets to visitors.
+
+Common causes:
+
+| Error | Fix |
+|---|---|
+| `No application encryption key has been specified` | Add `APP_KEY` (`php artisan key:generate --show`) |
+| `SQLSTATE[HY000] [2002]` / `Connection refused` / `timed out` | `DB_HOST`/`DB_PORT` are wrong, or the database does not allow outside connections |
+| `SQLSTATE[HY000] [1045] Access denied` | Wrong `DB_USERNAME` / `DB_PASSWORD` |
+| `Connections using insecure transport are prohibited` / SSL errors | Set `MYSQL_ATTR_SSL_CA=/etc/pki/tls/certs/ca-bundle.crt` |
+| `Base table or view not found: ... sessions` (or `cache`, `products`) | The build could not reach the database. Look for `Skipping database setup` in the build logs, fix the `DB_*` variables and redeploy |
+| `Vite manifest not found` | The build step did not run. Check the build logs for `npm run build` |
+
+After changing environment variables, redeploy. Vercel only applies them to new deployments.
