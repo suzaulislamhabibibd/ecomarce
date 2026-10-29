@@ -28,6 +28,13 @@ return [
     |
     */
 
+    /*
+    | Disk used for product images and shop logos. Use "s3" on serverless
+    | hosts such as Vercel, where the local filesystem is not persistent.
+    */
+
+    'uploads' => env('UPLOAD_DISK', 'public'),
+
     'disks' => [
 
         'local' => [

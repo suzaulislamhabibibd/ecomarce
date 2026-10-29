@@ -55,6 +55,6 @@ class Product extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image ? Storage::url($this->image) : null;
+        return $this->image ? Storage::disk(config('filesystems.uploads'))->url($this->image) : null;
     }
 }

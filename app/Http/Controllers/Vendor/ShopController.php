@@ -33,9 +33,9 @@ class ShopController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($vendor->logo) {
-                Storage::disk('public')->delete($vendor->logo);
+                Storage::disk(config('filesystems.uploads'))->delete($vendor->logo);
             }
-            $data['logo'] = $request->file('logo')->store('logos', 'public');
+            $data['logo'] = $request->file('logo')->store('logos', config('filesystems.uploads'));
         } else {
             unset($data['logo']);
         }

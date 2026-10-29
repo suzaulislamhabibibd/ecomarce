@@ -40,7 +40,7 @@ class ProductController extends Controller
         $data = $this->validated($request);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $data['image'] = $request->file('image')->store('products', config('filesystems.uploads'));
         }
 
         $vendor->products()->create([
@@ -73,9 +73,9 @@ class ProductController extends Controller
 
         if ($request->hasFile('image')) {
             if ($product->image) {
-                Storage::disk('public')->delete($product->image);
+                Storage::disk(config('filesystems.uploads'))->delete($product->image);
             }
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $data['image'] = $request->file('image')->store('products', config('filesystems.uploads'));
         }
 
         if ($data['name'] !== $product->name) {
@@ -92,7 +92,7 @@ class ProductController extends Controller
         $this->authorizeOwner($request, $product);
 
         if ($product->image) {
-            Storage::disk('public')->delete($product->image);
+            Storage::disk(config('filesystems.uploads'))->delete($product->image);
         }
         $product->delete();
 

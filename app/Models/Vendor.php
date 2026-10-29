@@ -80,6 +80,6 @@ class Vendor extends Model
 
     public function getLogoUrlAttribute(): ?string
     {
-        return $this->logo ? Storage::url($this->logo) : null;
+        return $this->logo ? Storage::disk(config('filesystems.uploads'))->url($this->logo) : null;
     }
 }

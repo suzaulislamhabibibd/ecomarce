@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
@@ -28,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureRole::class,
             'active' => EnsureUserIsActive::class,
         ]);
+        // Behind Vercel / load balancers: trust forwarded headers so HTTPS URLs are generated.
+        $middleware->trustProxies(at: '*');
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/');
     })
@@ -47,3 +49,10 @@ return Application::configure(basePath: dirname(__DIR__))
             return $response;
         });
     })->create();
+
+// Serverless hosts (Vercel) only allow writes under /tmp.
+if (isset($_ENV['VERCEL']) || getenv('VERCEL')) {
+    $app->useStoragePath('/tmp/storage');
+}
+
+return $app;

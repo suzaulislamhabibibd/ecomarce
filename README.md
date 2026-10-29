@@ -114,6 +114,10 @@ Base URL: `/api/v1`. It uses token auth (Laravel Sanctum): send `Authorization: 
 
 `/.well-known/assetlinks.json` is served from `ANDROID_PACKAGE` and `ANDROID_SHA256_FINGERPRINTS` in `.env`. With these set, product links and QR codes opened with the phone's normal camera also open straight in the app.
 
+## Deploying
+
+See [DEPLOY-VERCEL.md](DEPLOY-VERCEL.md) for hosting on Vercel (serverless PHP, external MySQL, S3/R2 uploads).
+
 ## Tests
 
 ```bash
